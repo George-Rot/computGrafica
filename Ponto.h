@@ -51,4 +51,14 @@ bool HaInterseccao(Ponto k, Ponto l, Ponto m, Ponto n);
 long int getContadorInt();
 void resetContadorInt();
 
+int lado(Ponto P1, Ponto P2, Ponto A); // retorna uma das constantes a seguir
+
+enum{
+    ESQUERDA,
+    DIREITA,
+    SOBRE
+};
+
+double calculaDistancia(Ponto P, Ponto Q);
+
 #endif /* Ponto_hpp */

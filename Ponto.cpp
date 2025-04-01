@@ -102,7 +102,7 @@ Ponto ObtemMaximo (Ponto P1, Ponto P2)
     
     Max.x = (P2.x > P1.x) ? P2.x : P1.x;
     Max.y = (P2.y > P1.y) ? P2.y : P1.y;
-    Max.z = (P2.z > P1.z) ? P2.z : P1.z;
+    Max.z = (P2.z > P1.x) ? P2.z : P1.z;
     return Max;
 }
 Ponto ObtemMinimo (Ponto P1, Ponto P2)
@@ -111,7 +111,7 @@ Ponto ObtemMinimo (Ponto P1, Ponto P2)
     
     Min.x = (P2.x < P1.x) ? P2.x : P1.x;
     Min.y = (P2.y < P1.y) ? P2.y : P1.y;
-    Min.z = (P2.z < P1.z) ? P2.z : P1.z;
+    Min.z = (P2.z < P1.x) ? P2.z : P1.z;
     return Min;
 }
 bool operator==(Ponto P1, Ponto P2)
@@ -227,4 +227,34 @@ void resetContadorInt()
 long int getContadorInt()
 {
     return ContadorInt;
+}
+
+// **********************************************************************
+//
+// **********************************************************************
+double calculaDistancia(Ponto P, Ponto Q)
+{
+    float dx, dy, dz;
+    
+    dx = P.x - Q.x;
+    dy = P.y - Q.y;
+    dz = P.z - Q.z;
+
+    return sqrt(dx*dx+dy*dy+dz*dz);
+}
+
+// **********************************************************************
+// int lado(Ponto P1, Ponto P2, Ponto A)
+// **********************************************************************
+int lado(Ponto P1, Ponto P2, Ponto A)
+{
+    Ponto V1, V2, V3;
+    V1 = P2-P1;
+    V2 = A-P1;
+    ProdVetorial (V1, V2, V3);
+    if (V3.z > 0)
+        return ESQUERDA;
+    if (V3.z < 0)
+        return DIREITA;
+    return SOBRE;
 }

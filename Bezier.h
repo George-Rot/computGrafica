@@ -43,6 +43,7 @@ public:
     Ponto Calcula(double t);
     Ponto getPC(int i);
     void Traca();
+    void TracaPoligonoDeControle();
     double CalculaT(double distanciaPercorrida);
     void calculaComprimentoDaCurva();
 };

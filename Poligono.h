@@ -23,7 +23,7 @@ using namespace std;
 #endif
 
 #ifdef __linux__
-#include <glut.h>
+#include <GL/glut.h>
 #endif
 
 #include "Ponto.h"
@@ -48,9 +48,8 @@ public:
     void LePoligono(const char *nome);
     void desenhaAresta(int n);
     void getAresta(int i, Ponto &P1, Ponto &P2);
-    void ObtemVerticesLimite(int &Esq, int &Dir, int &Inf, int &Sup);
-
-
+    void alteraVertice(int i, Ponto P);
+    void imprimeVertices();
 };
 
 #endif 

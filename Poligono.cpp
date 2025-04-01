@@ -78,6 +78,7 @@ void Poligono::obtemLimites(Ponto &Min, Ponto &Max)
         Max = ObtemMaximo (Vertices[i], Max);
     }
 }
+
 // **********************************************************************
 //
 // **********************************************************************
@@ -127,26 +128,13 @@ void Poligono::desenhaAresta(int n)
     glEnd();
 }
 
-void Poligono::ObtemVerticesLimite(int &Esq, int &Dir, int &Inf, int &Sup)
+void Poligono::alteraVertice(int i, Ponto P)
 {
-
-    Esq = Dir = Inf = Sup = 0;
-    
-    for (int i=1; i< Vertices.size(); i++)
-    {
-        if (Vertices[i].x < Vertices[Esq].x)
-            Esq = i;
-        if (Vertices[i].x > Vertices[Dir].x)
-            Dir = i;
-        if (Vertices[i].y < Vertices[Inf].y)
-            Inf = i;
-        if (Vertices[i].y > Vertices[Sup].y)
-            Sup = i;
-    }
-    cout << "Esq: " << Esq << "\n";
-    cout << "Dir: " << Dir << "\n";
-    cout << "Inf: " << Inf << "\n";
-    cout << "Sup: " << Sup << endl;
-    
+    Vertices[i] = P;
 }
 
+void Poligono::imprimeVertices()
+{
+    for (int i=0; i<Vertices.size(); i++)
+        Vertices[i].imprime("", "\n");
+}

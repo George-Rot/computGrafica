@@ -20,11 +20,11 @@ public:
     //Poligono *modelo;
     Instancia();
     TipoFuncao *modelo;
-    Ponto posicao, escala;
-    float rotacao;
+    Ponto Posicao, Escala;
+    float Rotacao;
     void desenha();
-    void setModelo(Poligono *P);
-    double t;
+    void AtualizaPosicao(double tempoDecorrido);
+    double r,g,b;
 };
 
 

@@ -16,6 +16,7 @@ Temporizador::Temporizador()
 #else
     // Figure out time elapsed since last call to idle function
     gettimeofday(&start_time, NULL);
+    
 #endif
 
 }

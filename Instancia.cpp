@@ -8,8 +8,6 @@
 
 #include "Instancia.h"
 
-void DesenhaPersonagem();
-void DesenhaRetangulo();
 // ***********************************************************
 //  void InstanciaPonto(Ponto3D *p, Ponto3D *out)
 //  Esta funcao calcula as coordenadas de um ponto no
@@ -45,27 +43,31 @@ Ponto InstanciaPonto(Ponto P)
 }
 Instancia::Instancia()
 {
-    rotacao = 0;
-    posicao = Ponto(0,0,0);
-    escala = Ponto(1,1,1);
-    t = 0.0;
+    cout << "Instanciado..." << endl;
+    Rotacao = 0;
+    Posicao = Ponto(0,0,0);
+    Escala = Ponto(1,1,1);
 }
+
 void Instancia::desenha()
 {
-    //cout << "Desenhou..." << endl;
-    // aplica as transformacoes geometricas no modelo
+    // Aplica as transformacoes geometricas no modelo
     glPushMatrix();
-    glTranslatef(posicao.x, posicao.y, 0);
-    glRotatef(rotacao, 0, 0, 1);
-    glScalef(escala.x, escala.y, escala.z);
-    
-    Ponto PosicaoDoPersonagem;
-    Ponto Origem (0,0,0);
-    InstanciaPonto(Origem, PosicaoDoPersonagem);
-    //PosicaoDoPersonagem.imprime(); cout << endl;
-    
-    (*modelo)();
-    
+        glTranslatef(Posicao.x, Posicao.y, 0);
+        glRotatef(Rotacao, 0, 0, 1);
+        glScalef(Escala.x, Escala.y, Escala.z);
+        
+        // Obtem a posicao do ponto 0,0,0 no SRU
+        // Nao eh usado aqui, mas eh util para detectar colisoes
+        Ponto PosicaoDoPersonagem;
+        PosicaoDoPersonagem = InstanciaPonto(Ponto (0,0,0));
+        
+        (*modelo)(); // desenha a instancia
+        
     glPopMatrix();
 }
 
+void Instancia::AtualizaPosicao(double tempoDecorrido)
+{
+    
+}

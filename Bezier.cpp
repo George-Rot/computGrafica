@@ -9,9 +9,10 @@
 Bezier::Bezier()
 {
     for (int i=0;i<3;i++)
-    Coords[i] = Ponto(0,0,0);
+        Coords[i] = Ponto(0,0,0);
     ComprimentoTotalDaCurva = 0;
     cor = rand() % 100;
+    //cout << "Cor: " << cor << endl;
 }
 // **********************************************************************
 //
@@ -34,7 +35,7 @@ void Bezier::calculaComprimentoDaCurva()
     }
     P2 = Calcula(1.0); // faz o fechamento da curva
     ComprimentoTotalDaCurva += calculaDistancia(P1,P2);
-    cout << "ComprimentoTotalDaCurva: " << ComprimentoTotalDaCurva << endl;
+    //cout << "ComprimentoTotalDaCurva: " << ComprimentoTotalDaCurva << endl;
     
 }
 // **********************************************************************
@@ -99,4 +100,14 @@ void Bezier::Traca()
     glVertex2f(P.x, P.y);
     glEnd();
 }
-
+// **********************************************************************
+//
+// **********************************************************************
+void Bezier::TracaPoligonoDeControle()
+{
+    glBegin(GL_LINE_LOOP);
+    for(int i=0;i<3;i++)
+        glVertex3f(Coords[i].x,Coords[i].y,Coords[i].z);
+    glEnd();
+    
+}
