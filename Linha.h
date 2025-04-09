@@ -9,15 +9,30 @@
 #include <GLUT/glut.h>
 #endif
 
+#ifdef __linux__
+#include <GL/glut.h>
+#endif
+
 //#include "Ponto.h"
 
-class Linha {
-	float minx,miny, maxx, maxy; // envelope
+#ifndef LINHA_H
+#define LINHA_H
 
-public:
-	float x1,y1,x2,y2;
+#include "Ponto.h"
 
-    void geraLinha(int limite, int TamMax);
-	void desenhaLinha();
+struct Linha {
+    Ponto a, b, c;
+
+    // Construtor padrão
+    Linha();
+
+    // Construtor com argumentos
+    Linha(Ponto A, Ponto B, Ponto C);
+
+	Ponto getA() const { return a; }
+	Ponto getB() const { return b; }
+	Ponto getC() const { return c; }
 
 };
+
+#endif // LINHA_H

@@ -36,7 +36,7 @@ using namespace std;
 #endif
 
 #ifdef __linux__
-#include <GL/glut.h>
+#include <GL/glut.h>    
 #endif
 
 #include "Ponto.h"
@@ -45,6 +45,9 @@ using namespace std;
 #include "Temporizador.h"
 
 #include "ListaDeCoresRGB.h"
+
+#include "Linha.h"
+#include "Bezier.h"
 
 // Limites logicos da area de desenho
 Ponto Min, Max;
@@ -56,6 +59,14 @@ bool desenha = false;
 float angulo=0.0;
 
 Ponto PosicaoDoCampoDeVisao, PontoClicado;
+Ponto novoPonto[3];
+int indexPonto = 0;
+Linha linhas[20];
+Bezier curvas[20];
+
+int qtdLinhas = 0;
+int modo = 0;
+
 bool FoiClicado = false;
 
 
@@ -180,14 +191,56 @@ void display( void )
 	// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 	// Coloque aqui as chamadas das rotinas que desenham os objetos
 	// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+    /*if(FoiClicado){
+        switch(modo){
+            case 0://modo criar curvas
+                if(indexPonto < 3){
+                    novoPonto[indexPonto] = PontoClicado;
+                    indexPonto++;
+                }
+                if(indexPonto == 3){
+                    linhas[qtdLinhas] = Linha(novoPonto[0], novoPonto[1], novoPonto[2]);
+                    Bezier Bezier(novoPonto[0], novoPonto[1], novoPonto[2]); //cria a curva dos respectivos pontos
+                    curvas[qtdLinhas] = Bezier; // armzena a curva
+                    Bezier.Traca();
+                    Bezier.TracaPoligonoDeControle();
+                    qtdLinhas++;
+                    indexPonto = 0;
+                }
 
+            break;
+            case 1://modo sequencial de curvas
+                if(qtdLinhas == 0){
+                    cout << "Não há curvas a serem ligadas" << endl;
+                    break;
+                }
+                if(indexPonto < 2){
+                    novoPonto[indexPonto] = PontoClicado;
+                    indexPonto++;
+                }
+                if(indexPonto == 2){
+                    Ponto A = linhas[qtdLinhas-1].getC();
 
-    defineCor(GreenYellow);
+                    linhas[qtdLinhas] = Linha(A, novoPonto[0], novoPonto[1]);
+                    Bezier Bezier(A, novoPonto[0], novoPonto[1]); //cria a curva dos respectivos pontos
+                    curvas[qtdLinhas] = Bezier; // armzena a curva
+                    Bezier.Traca();
+                    Bezier.TracaPoligonoDeControle();
+                    qtdLinhas++;
+                    indexPonto = 0;
+                }
+            break;
+
+        }
+    }
+    */
+    FoiClicado = false;
+    /*defineCor(GreenYellow);
     Ponto P1, P2, P3;
     P1 = Ponto(-10,-10);
     P2 = Ponto(0, 10);
     P3 = Ponto(10, -10);
-    
+
     glPushMatrix();
         DesenhaTriangulo(P1, P2, P3);
     glPopMatrix();
@@ -197,12 +250,7 @@ void display( void )
     
     defineCor(IndianRed);
     Poly.desenhaPoligono();
-    
-    if (FoiClicado)
-    {
-        PontoClicado.imprime("- Ponto no universo: ", "\n");
-        FoiClicado = false;
-    }
+    */
     
 	glutSwapBuffers();
 }
@@ -295,10 +343,14 @@ void arrow_keys ( int a_keys, int x, int y )
 			glutFullScreen ( ); // Vai para Full Screen
 			break;
         case GLUT_KEY_RIGHT:       // Se pressionar UP
-            angulo--; // Vai para Full Screen
+            modo++;
+            if(modo > 1)
+                modo = 0;
             break;
         case GLUT_KEY_LEFT:       // Se pressionar UP
-            angulo++; // Vai para Full Screen
+            modo--;
+            if(modo < 0)
+                modo = 1;
             break;
 	    case GLUT_KEY_DOWN:     // Se pressionar UP
 								// Reposiciona a janela
