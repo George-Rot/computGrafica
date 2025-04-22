@@ -197,6 +197,48 @@ void RotacionaAoRedorDeUmPonto(float alfa, Ponto P)
     glRotatef(alfa, 0,0,1);
     glTranslatef(-P.x, -P.y, -P.z);
 }
+
+void ReiniciaDisplay() {
+    glClear(GL_COLOR_BUFFER_BIT); // Limpa o display
+    for (int i = 0; i < qtdLinhas; i++) {
+        curvas[i].Traca(); // Desenha as curvas
+        if (poligControle) {
+            curvas[i].TracaPoligonoDeControle(); // Desenha os polígonos de controle, se habilitado
+        }
+    }
+
+    // Escreve o modo atual no canto superior esquerdo da tela
+    string modoTexto;
+    switch (modo) {
+        case 0:
+            modoTexto = "Modo Criar Curvas";
+            break;
+        case 1:
+            modoTexto = "Modo Sequencial de Curvas";
+            break;
+        case 2:
+            modoTexto = "Modo Continuidade de Derivada";
+            break;
+        case 3:
+            modoTexto = "Modo Deletar Ponto";
+            break;
+        case 4:
+            modoTexto = "Modo Mover Ponto";
+            break;
+        default:
+            modoTexto = "Modo Desconhecido";
+            break;
+    }
+
+    glColor3f(1.0, 1.0, 1.0); // Define a cor do texto (branco)
+    glRasterPos2f(Min.x + 1, Max.y - 1); // Define a posição do texto na janela
+    for (char c : modoTexto) {
+        glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, c); // Renderiza o texto
+    }
+
+    glutSwapBuffers(); // Atualiza o display
+}
+
 //
 // **********************************************************************
 //  void display( void )
@@ -336,46 +378,57 @@ void display( void )
                             break;
                         }
                     }
+                    indexPonto = 0; 
                     break;
-            
-            
-        }
-    }
+                case 4: // modo mover ponto
+                    // Mover um ponto caso o clique ocorra em seu ponto inicial, médio ou final
+                    cout << indexPonto << endl;
+                    if(indexPonto == 0){
+                        // Exibe a mensagem na tela para o usuário
+                        novoPonto[indexPonto] = PontoClicado;
+                        indexPonto++;
+                        glColor3f(1.0, 1.0, 1.0); // Define a cor do texto (branco)
+                        glRasterPos2f(Min.x + 1, Max.y - 2); // Define a posição do texto na janela
+                        string mensagem = "Selecione o ponto a ser movido aqui";
+                        for (char c : mensagem) {
+                            glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, c); // Renderiza o texto
+                        }
+                    }else{
+                        for (int i = 0; i < qtdLinhas; i++) {
+                            Ponto start = linhas[i].getA();
+                            Ponto middle = linhas[i].getB();
+                            Ponto end = linhas[i].getC();
 
-        // Desenha os eixos para referência
-        DesenhaEixos();
+                            // Calcula a hitbox com base no tamanho da janela
+                            GLint viewport[4];
+                            glGetIntegerv(GL_VIEWPORT, viewport);
+                            float hitboxSize = (Max.x - Min.x) / viewport[2] * 10; // Ajusta o tamanho da hitbox
+                            if ((abs(PontoClicado.x - start.x) <= hitboxSize && abs(PontoClicado.y - start.y) <= hitboxSize)) {
+                                linhas[i].setA(novoPonto[0]);
+                                Bezier novaCurva = Bezier(novoPonto[0], linhas[i].getB(), linhas[i].getC());
+                                curvas[i] = novaCurva; // Atualiza a curva
+                                cout << "Ponto inicial movido!" << endl;
+                            } else if ((abs(PontoClicado.x - middle.x) <= hitboxSize && abs(PontoClicado.y - middle.y) <= hitboxSize)) {
+                                linhas[i].setB(novoPonto[0]);
+                                Bezier novaCurva = Bezier(linhas[i].getA(), novoPonto[0], linhas[i].getC());
+                                curvas[i] = novaCurva; // Atualiza a curva
+                                cout << "Ponto médio movido!" << endl;
+                            } else if ((abs(PontoClicado.x - end.x) <= hitboxSize && abs(PontoClicado.y - end.y) <= hitboxSize)) {
+                                linhas[i].setC(novoPonto[0]);
+                                Bezier novaCurva = Bezier(linhas[i].getA(), linhas[i].getB(), novoPonto[0]);
+                                curvas[i] = novaCurva; // Atualiza a curva
+                                cout << "Ponto final movido!" << endl;
+                            } else {
+                                cout << "Selecione um ponto válido!" << endl;
+                            } 
+                            }
+                            indexPonto = 0; // Reinicia o índice para o próximo clique
+                        }
+                        break;                          
+                        }
+                    }
 
-        // Redesenha todas as linhas e curvas armazenadas
-        for (int i = 0; i < qtdLinhas; i++) {
-            curvas[i].Traca(); // Desenha a curva
-            if (poligControle) {
-                curvas[i].TracaPoligonoDeControle(); // Desenha o polígono de controle, se habilitado
-            }
-        }
-        // Escreve o modo atual no canto superior esquerdo da tela
-        string modoTexto;
-        switch (modo) {
-            case 0:
-                modoTexto = "Modo Criar Curvas";
-                break;
-            case 1:
-                modoTexto = "Modo Sequencial de Curvas";
-                break;
-            case 2:
-                modoTexto = "Modo Conectar com Linha Existente";
-                break;
-            case 3:
-                modoTexto = "Modo Deletar Ponto";
-                break;
-            default:
-                modoTexto = "Modo Desconhecido";
-                break;
-        }
-        glColor3f(1.0, 1.0, 1.0); // Define a cor do texto (branco)
-        glRasterPos2f(Min.x + 1, Max.y - 1); // Define a posição do texto na janela
-        for (char c : modoTexto) {
-            glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, c); // Renderiza o texto
-        }
+        ReiniciaDisplay();  
     
     FoiClicado = false;
     /*defineCor(GreenYellow);
@@ -482,6 +535,10 @@ void keyboard ( unsigned char key, int x, int y )
 
 	switch ( key )
 	{
+        case 'p':
+            cout << "Poligono de Controle: " << poligControle << endl;
+            poligControle = !poligControle;
+            break;
 		case 27:        // Termina o programa qdo
 			exit ( 0 );   // a tecla ESC for pressionada
 			break;
@@ -509,38 +566,18 @@ void arrow_keys ( int a_keys, int x, int y )
             break;
         case GLUT_KEY_RIGHT:       // Se pressionar RIGHT
             modo++;
-            if(modo == 4)
+            if(modo == 5)
                 modo = 0;
             break;
         case GLUT_KEY_LEFT:       // Se pressionar LEFT
             modo--;
             if(modo < 0)
-                modo = 3;
+                modo = 5;
             break;
         case GLUT_KEY_DOWN:     // Se pressionar DOWN
                                 // Reposiciona a janela
             glutPositionWindow (50,50);
             glutReshapeWindow ( 700, 500 );
-            break;
-        case 'p': // Se pressionar 'p'
-            if(poligControle){
-                poligControle = false;
-                glClear(GL_COLOR_BUFFER_BIT); // Limpa o display
-                for (int i = 0; i < qtdLinhas; i++) {
-                    curvas[i].Traca(); // Desenha as curvas
-                }
-                glutSwapBuffers(); // Atualiza o display
-            }else{
-                poligControle = true;
-                glClear(GL_COLOR_BUFFER_BIT); // Limpa o display
-                for (int i = 0; i < qtdLinhas; i++) {
-                    curvas[i].TracaPoligonoDeControle(); // Desenha os polígonos de controle
-                }
-                for (int i = 0; i < qtdLinhas; i++) {
-                    curvas[i].Traca(); // Desenha as curvas
-                }
-                glutSwapBuffers(); // Atualiza o display
-            }
             break;
         default:
             break;
