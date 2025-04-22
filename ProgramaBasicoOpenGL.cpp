@@ -63,6 +63,7 @@ Ponto novoPonto[3];
 int indexPonto = 0;
 Linha linhas[20];
 Bezier curvas[20];
+bool poligControle = true;
 
 int qtdLinhas = 0;
 int modo = 0;
@@ -77,13 +78,35 @@ void init()
 {
     
     // Define a cor do fundo da tela (AZUL)
-    glClearColor(0.0f, 0.0f, 1.0f, 1.0f);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
     Min = Ponto (-20, -20);
     Max = Ponto (20, 20);
     
     Poly.LePoligono("Retangulo1x1.txt");
-
+string modoTexto;
+            switch (modo) {
+                case 0:
+                    modoTexto = "Modo Criar Curvas";
+                    break;
+                case 1:
+                    modoTexto = "Modo Sequencial de Curvas";
+                    break;
+                case 2:
+                    modoTexto = "Modo Conectar com Linha Existente";
+                    break;
+                case 3:
+                    modoTexto = "Modo Deletar Ponto";
+                    break;
+                default:
+                    modoTexto = "Modo Desconhecido";
+                    break;
+            }
+            glColor3f(1.0, 1.0, 1.0); // Define a cor do texto (branco)
+            glRasterPos2f(Min.x + 1, Max.y - 1); // Define a posição do texto na janela
+            for (char c : modoTexto) {
+                glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, c); // Renderiza o texto
+            }
 }
 
 double nFrames=0;
@@ -183,7 +206,7 @@ void display( void )
 
 	// Limpa a tela coma cor de fundo
 	glClear(GL_COLOR_BUFFER_BIT);
-
+    glDisable(GL_DEPTH_TEST);
     // Define os limites logicos da area OpenGL dentro da Janela
 	glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
@@ -191,15 +214,21 @@ void display( void )
 	// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 	// Coloque aqui as chamadas das rotinas que desenham os objetos
 	// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-    /*if(FoiClicado){
+    if(FoiClicado){
         switch(modo){
             case 0://modo criar curvas
+                cout << "Modo Criar Curvas" << endl;
+                cout << "Ponto Clicado: " << PontoClicado.x << " " << PontoClicado.y << endl;
                 if(indexPonto < 3){
                     novoPonto[indexPonto] = PontoClicado;
                     indexPonto++;
                 }
                 if(indexPonto == 3){
-                    linhas[qtdLinhas] = Linha(novoPonto[0], novoPonto[1], novoPonto[2]);
+                    Ponto a, b, c;
+                    a = novoPonto[0];
+                    b = novoPonto[1];
+                    c = novoPonto[2];
+                    linhas[qtdLinhas] = Linha(a, b, c);
                     Bezier Bezier(novoPonto[0], novoPonto[1], novoPonto[2]); //cria a curva dos respectivos pontos
                     curvas[qtdLinhas] = Bezier; // armzena a curva
                     Bezier.Traca();
@@ -229,11 +258,125 @@ void display( void )
                     qtdLinhas++;
                     indexPonto = 0;
                 }
+            
             break;
+            case 2: // continuidade de derivada
+                if (indexPonto == 0) {
+                    bool validStartPoint = false;
+                    for (int i = 0; i < qtdLinhas; i++) {
+                        Ponto start = linhas[i].getA();
+                        Ponto end = linhas[i].getC();
 
+                        if (abs(PontoClicado.x - start.x) <= 20 && abs(PontoClicado.y - start.y) <= 20) {
+                            novoPonto[0] = start;
+                            validStartPoint = true;
+                            break;
+                        } else if (abs(PontoClicado.x - end.x) <= 20 && abs(PontoClicado.y - end.y) <= 20) {
+                            novoPonto[0] = end;
+                            validStartPoint = true;
+                            break;
+                        }
+                    }
+
+                    if (!validStartPoint) {
+                        cout << "Give a valid start point" << endl;
+                        break;
+                    }
+
+                    indexPonto++;
+                } else if (indexPonto < 3) {
+                    novoPonto[indexPonto] = PontoClicado;
+                    indexPonto++;
+                }
+
+                if (indexPonto == 3) {
+                    // Ponto final da última curva
+                    Ponto A = linhas[qtdLinhas - 1].getC();
+
+                    // Ponto intermediário da última curva
+                    Ponto B = linhas[qtdLinhas - 1].getB();
+
+                    // Calcula o ponto inicial da nova curva para manter continuidade de derivada
+                    Ponto D = A + (A - B); // Reflete o ponto intermediário em relação ao ponto final
+
+                    // Cria a nova linha e curva com continuidade de derivada
+                    linhas[qtdLinhas] = Linha(A, D, novoPonto[1]);
+                    Bezier Bezier(A, D, novoPonto[1]); // Cria a curva dos respectivos pontos
+                    curvas[qtdLinhas] = Bezier;        // Armazena a curva
+                    Bezier.Traca();
+                    Bezier.TracaPoligonoDeControle();
+                    qtdLinhas++;
+                    indexPonto = 0;
+                }
+                break;
+                case 3: // deletar um ponto
+                    // Deletar uma linha caso o clique ocorra em seu ponto inicial, médio ou final
+                    for (int i = 0; i < qtdLinhas; i++) {
+                        Ponto start = linhas[i].getA();
+                        Ponto middle = linhas[i].getB();
+                        Ponto end = linhas[i].getC();
+
+                        // Calcula a hitbox com base no tamanho da janela
+                        GLint viewport[4];
+                        glGetIntegerv(GL_VIEWPORT, viewport);
+                        float hitboxSize = (Max.x - Min.x) / viewport[2] * 10; // Ajusta o tamanho da hitbox
+
+                        // Verifica se o clique está dentro da hitbox de algum dos pontos
+                        if ((abs(PontoClicado.x - start.x) <= hitboxSize && abs(PontoClicado.y - start.y) <= hitboxSize) ||
+                            (abs(PontoClicado.x - middle.x) <= hitboxSize && abs(PontoClicado.y - middle.y) <= hitboxSize) ||
+                            (abs(PontoClicado.x - end.x) <= hitboxSize && abs(PontoClicado.y - end.y) <= hitboxSize)) {
+                            
+                            // Remove a linha e curva correspondente
+                            for (int j = i; j < qtdLinhas - 1; j++) {
+                                linhas[j] = linhas[j + 1];
+                                curvas[j] = curvas[j + 1];
+                            }
+                            qtdLinhas--;
+                            cout << "Linha deletada!" << endl;
+                            break;
+                        }
+                    }
+                    break;
+            
+            
         }
     }
-    */
+
+        // Desenha os eixos para referência
+        DesenhaEixos();
+
+        // Redesenha todas as linhas e curvas armazenadas
+        for (int i = 0; i < qtdLinhas; i++) {
+            curvas[i].Traca(); // Desenha a curva
+            if (poligControle) {
+                curvas[i].TracaPoligonoDeControle(); // Desenha o polígono de controle, se habilitado
+            }
+        }
+        // Escreve o modo atual no canto superior esquerdo da tela
+        string modoTexto;
+        switch (modo) {
+            case 0:
+                modoTexto = "Modo Criar Curvas";
+                break;
+            case 1:
+                modoTexto = "Modo Sequencial de Curvas";
+                break;
+            case 2:
+                modoTexto = "Modo Conectar com Linha Existente";
+                break;
+            case 3:
+                modoTexto = "Modo Deletar Ponto";
+                break;
+            default:
+                modoTexto = "Modo Desconhecido";
+                break;
+        }
+        glColor3f(1.0, 1.0, 1.0); // Define a cor do texto (branco)
+        glRasterPos2f(Min.x + 1, Max.y - 1); // Define a posição do texto na janela
+        for (char c : modoTexto) {
+            glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, c); // Renderiza o texto
+        }
+    
     FoiClicado = false;
     /*defineCor(GreenYellow);
     Ponto P1, P2, P3;
@@ -293,13 +436,35 @@ void Mouse(int button,int state,int x,int y)
 
     if(state!=GLUT_DOWN)
       return;
-    if(button!=GLUT_RIGHT_BUTTON)
+    if(button!=GLUT_LEFT_BUTTON)
      return;
     cout << "Botao da direita! ";
 
     glGetIntegerv(GL_VIEWPORT,viewport);
     y=viewport[3]-y;
-    wy=y;
+    wy=y;string modoTexto;
+            switch (modo) {
+                case 0:
+                    modoTexto = "Modo Criar Curvas";
+                    break;
+                case 1:
+                    modoTexto = "Modo Sequencial de Curvas";
+                    break;
+                case 2:
+                    modoTexto = "Modo Conectar com Linha Existente";
+                    break;
+                case 3:
+                    modoTexto = "Modo Deletar Ponto";
+                    break;
+                default:
+                    modoTexto = "Modo Desconhecido";
+                    break;
+            }
+            glColor3f(1.0, 1.0, 1.0); // Define a cor do texto (branco)
+            glRasterPos2f(Min.x + 1, Max.y - 1); // Define a posição do texto na janela
+            for (char c : modoTexto) {
+                glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, c); // Renderiza o texto
+            }
     glGetDoublev(GL_MODELVIEW_MATRIX,modelview);
     glGetDoublev(GL_PROJECTION_MATRIX,projection);
     glReadPixels(x,y,1,1,GL_DEPTH_COMPONENT,GL_FLOAT,&wz);
@@ -337,29 +502,49 @@ void keyboard ( unsigned char key, int x, int y )
 // **********************************************************************
 void arrow_keys ( int a_keys, int x, int y )
 {
-	switch ( a_keys )
-	{
-		case GLUT_KEY_UP:       // Se pressionar UP
-			glutFullScreen ( ); // Vai para Full Screen
-			break;
-        case GLUT_KEY_RIGHT:       // Se pressionar UP
+    switch ( a_keys )
+    {
+        case GLUT_KEY_UP:       // Se pressionar UP
+            glutFullScreen ( ); // Vai para Full Screen
+            break;
+        case GLUT_KEY_RIGHT:       // Se pressionar RIGHT
             modo++;
-            if(modo > 1)
+            if(modo == 4)
                 modo = 0;
             break;
-        case GLUT_KEY_LEFT:       // Se pressionar UP
+        case GLUT_KEY_LEFT:       // Se pressionar LEFT
             modo--;
             if(modo < 0)
-                modo = 1;
+                modo = 3;
             break;
-	    case GLUT_KEY_DOWN:     // Se pressionar UP
-								// Reposiciona a janela
+        case GLUT_KEY_DOWN:     // Se pressionar DOWN
+                                // Reposiciona a janela
             glutPositionWindow (50,50);
-			glutReshapeWindow ( 700, 500 );
-			break;
-		default:
-			break;
-	}
+            glutReshapeWindow ( 700, 500 );
+            break;
+        case 'p': // Se pressionar 'p'
+            if(poligControle){
+                poligControle = false;
+                glClear(GL_COLOR_BUFFER_BIT); // Limpa o display
+                for (int i = 0; i < qtdLinhas; i++) {
+                    curvas[i].Traca(); // Desenha as curvas
+                }
+                glutSwapBuffers(); // Atualiza o display
+            }else{
+                poligControle = true;
+                glClear(GL_COLOR_BUFFER_BIT); // Limpa o display
+                for (int i = 0; i < qtdLinhas; i++) {
+                    curvas[i].TracaPoligonoDeControle(); // Desenha os polígonos de controle
+                }
+                for (int i = 0; i < qtdLinhas; i++) {
+                    curvas[i].Traca(); // Desenha as curvas
+                }
+                glutSwapBuffers(); // Atualiza o display
+            }
+            break;
+        default:
+            break;
+    }
 }
 
 // **********************************************************************

@@ -1,6 +1,6 @@
     // **********************************************************************
-// PUCRS/Escola Polit�cnica
-// COMPUTA��O GR�FICA
+// PUCRS/Escola Politecnica
+// COMPUTACAO GRAFICA
 //
 // Programa basico para criar aplicacoes 2D em OpenGL
 //
@@ -36,7 +36,7 @@ using namespace std;
 #endif
 
 #ifdef __linux__
-#include <glut.h>
+#include <GL/glut.h>
 #endif
 
 #include "Ponto.h"

@@ -9,30 +9,30 @@
 #include <GLUT/glut.h>
 #endif
 
-#ifdef __linux__
-#include <GL/glut.h>
-#endif
-
 //#include "Ponto.h"
-
 #ifndef LINHA_H
 #define LINHA_H
-
 #include "Ponto.h"
 
-struct Linha {
-    Ponto a, b, c;
+class Linha {
+private:
+    Ponto ponto1;
+    Ponto ponto2;
+    Ponto ponto3;
 
-    // Construtor padrão
+public:
+    Linha(const Ponto& p1, const Ponto& p2, const Ponto& p3);
     Linha();
 
-    // Construtor com argumentos
-    Linha(Ponto A, Ponto B, Ponto C);
+    // Getters
+    Ponto getA() const;
+    Ponto getB() const;
+    Ponto getC() const;
 
-	Ponto getA() const { return a; }
-	Ponto getB() const { return b; }
-	Ponto getC() const { return c; }
-
+    // Setters
+    void setA(const Ponto& p);
+    void setB(const Ponto& p);
+    void setC(const Ponto& p);
 };
 
 #endif // LINHA_H
